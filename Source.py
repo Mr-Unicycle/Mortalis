@@ -114,6 +114,20 @@ def validate(string,upper):
         except IndexError:
             print(f"Please input a number between 0 and {upper}.")
 
+def delete_character(pos):
+    remove = []
+    reduce = []
+    for i in range(len(roster)):
+        if roster[i] > pos:
+            reduce.append(i)
+        elif roster[i] == pos:
+            remove.append(i)
+    for elem in reduce:
+        roster[elem]-=1
+    for elem in remove:
+        roster.pop(elem)
+    characters.pop(pos)
+
 def main_loop():
     while True:
         clear()
@@ -156,7 +170,7 @@ def main_loop():
         elif l1==1:
             while True:
                 clear()
-                l2 = validate("(0) Add Character\t(1) Remove Character\t(2)Make Character\t(3)Adjust Stats\t(4) Back:", 4)
+                l2 = validate("(0) Add Character\t(1) Remove Character\t(2)Make Character\t(3)Adjust Stats\t(4) Delete Character\t(5) Back:", 4)
                 if l2 ==0:
                     clear()
                     for i in range(len(characters)):
@@ -236,6 +250,22 @@ def main_loop():
                         elif l4 == 3:
                             break
                 elif l2 == 4:
+                    clear()
+                    for i in range(len(characters)):
+                        print(f"({i}) {characters[i].name}")
+                    print(f"({len(characters)}) Back")
+                    l3 = validate("Which Character?: ",len(characters))
+                    if l3 == len(characters):
+                        continue
+                    while True:
+                        clear()
+                        verify = input(f"This action cannot be undone. Are you sure you want to permantly delete {characters[l3].name}?(Y/N)")
+                        if verify.upper == "Y":
+                            delete_character(l3)
+                            break
+                        elif verify.upper == "N":
+                            break
+                elif l2 == 5:
                     break
         elif l1==2:
             if input("Are you sure you want to exit? (Type \"Yupperdoodles\")").upper() == "YUPPERDOODLES":
