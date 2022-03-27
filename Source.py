@@ -1,7 +1,8 @@
-import enum
 import json
 from os import system
-from xml.dom.minidom import Element
+import logging
+log_name = input("What's the date?(yyyy-mm-dd is probably best, but what ever floats your goat)") + ".log"
+logging.basicConfig(filename=log_name,format="%(asctime)s: %(message)s",level = logging.INFO)
 file_name = "characters.txt"
 
 class Stuff:
@@ -153,18 +154,21 @@ def main_loop():
                         print(f"({i}) {skill.name}", end = "\t")
                     l5 = validate("\nWhich skill?: ", len(characters[roster[l2]].abilities[l4].skills)-1)
                     characters[roster[l2]].abilities[l4].skills[l5].add_to_val(1)
+                    logging.info(f"{characters[roster[l2]].name}:{characters[roster[l2]].abilities[l4].skills[l5].name}")
                 elif l3 == 1:
                     clear()
                     for i, weapon in enumerate(characters[roster[l2]].weapons):
                         print(f"({i}) {weapon.name}",end = "\t")
                     l4 = validate("\nWhich Tool?: ", len(characters[roster[l2]].weapons)-1)
                     characters[roster[l2]].weapons[l4].add_to_val(1)
+                    logging.info(f"{characters[roster[l2]].name}:{characters[roster[l2]].weapons[l4].name}")
                 elif l3 == 2:
                     clear()
                     for i, tool in enumerate(characters[roster[l2]].tools):
                         print(f"({i}) {tool.name}")
                     l4 = validate("Which Tool?: ", len(characters[roster[l2]].tools)-1)
                     characters[roster[l2]].tools[l4].add_to_val(1)
+                    logging.info(f"{characters[roster[l2]].name}:{characters[roster[l2]].tools[l4].name}")
                 elif l3 == 3:
                     continue
         elif l1==1:
@@ -272,5 +276,16 @@ def main_loop():
                 break
 
 load()
+logging.info("START OF CHARACTER STARTING VALUES")
+for character in characters:
+    logging.info(character.name)
+    for ability in character.abilities:
+        logging.info(f"\t{ability.name}")
+        for skill in ability.skills:
+            logging.info(f"\t\t{skill.name}")
+    for weapon in character.weapons:
+        logging.info(f"\t{weapon.name}")
+    for tool in character.tools:
+        logging.info(f"\t{tool.name}")
 main_loop()
 save()
