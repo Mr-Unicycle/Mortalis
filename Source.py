@@ -1,5 +1,7 @@
+import enum
 import json
 from os import system
+from xml.dom.minidom import Element
 file_name = "characters.txt"
 
 class Stuff:
@@ -61,46 +63,44 @@ def clear():
     system("cls")
 
 def load():
-    f = open(file_name,"r")
-    for line in f:
-        characters.append(Character(json.loads(line.strip())))
-    f.close()
+    with open(file_name,"r") as f:
+        for line in f:
+            characters.append(Character(json.loads(line.strip())))
     characters.sort(key = lambda x: x.player)
 def save():
     f = open(file_name,"w")
     f.close()
-    f = open(file_name,"a")
-    for character in characters:
-        f.write("{\"Name\":\""+character.name+"\",\"Player\":\""+character.player+"\",\"Abilities\":{")
-        ability_num = 0
-        for ability in character.abilities:
-            if ability_num!=0:
-                f.write(",")
-            f.write("\""+ability.name+"\":{")
-            skill_num=0
-            for skill in ability.skills:
-                if skill_num!=0:
+    with open(file_name,"a") as f:
+        for character in characters:
+            f.write("{\"Name\":\""+character.name+"\",\"Player\":\""+character.player+"\",\"Abilities\":{")
+            ability_num = 0
+            for ability in character.abilities:
+                if ability_num!=0:
                     f.write(",")
-                f.write(f"\"{skill.name}\":{str(skill.value)}")
-                skill_num+=1
-            f.write("}")
-            ability_num+=1
-        f.write("},\"Tools\":{")
-        tool_num = 0
-        for tool in character.tools:
-            if tool_num!=0:
-                f.write(",")
-            f.write(f"\"{tool.name}:{str(tool.value)}")
-            tool_num+=1
-        f.write("},\"Weapons\":{")
-        weapon_num=0
-        for weapon in character.weapons:
-            if weapon_num!=0:
-                f.write(",")
-            f.write(f"\"{weapon.name}:{str(weapon.value)}")
-            weapon_num+=1
-        f.write("\n")
-    f.close()
+                f.write("\""+ability.name+"\":{")
+                skill_num=0
+                for skill in ability.skills:
+                    if skill_num!=0:
+                        f.write(",")
+                    f.write(f"\"{skill.name}\":{str(skill.value)}")
+                    skill_num+=1
+                f.write("}")
+                ability_num+=1
+            f.write("},\"Tools\":{")
+            tool_num = 0
+            for tool in character.tools:
+                if tool_num!=0:
+                    f.write(",")
+                f.write(f"\"{tool.name}:{str(tool.value)}")
+                tool_num+=1
+            f.write("},\"Weapons\":{")
+            weapon_num=0
+            for weapon in character.weapons:
+                if weapon_num!=0:
+                    f.write(",")
+                f.write(f"\"{weapon.name}:{str(weapon.value)}")
+                weapon_num+=1
+            f.write("\n")
 
 def validate(string,upper):
     while True:
@@ -117,10 +117,10 @@ def validate(string,upper):
 def delete_character(pos):
     remove = []
     reduce = []
-    for i in range(len(roster)):
-        if roster[i] > pos:
+    for i, pos_ in enumerate(roster):
+        if pos_ > pos:
             reduce.append(i)
-        elif roster[i] == pos:
+        elif pos_ == pos:
             remove.append(i)
     for elem in reduce:
         roster[elem]-=1
@@ -135,8 +135,8 @@ def main_loop():
         if l1==0:
             while True:
                 clear()
-                for i in range(len(roster)):
-                    print(f"({i}) {characters[roster[i]].name}({characters[roster[i]].player})",end = "\t")
+                for i, elem in enumerate(roster):
+                    print(f"({i}) {characters[elem].name}({characters[elem].player})",end = "\t")
                 print(f"({len(roster)}) Back")
                 l2 = validate("Which Character?: ", len(roster))
                 if l2 == len(roster):
@@ -145,24 +145,24 @@ def main_loop():
                 l3 = validate("(0) Skill\t(1) Weapon\t(2) Tool\t(3) back:",3)
                 if l3 == 0:
                     clear()
-                    for i in range(len(characters[roster[l2]].abilities)):
-                        print(f"({i}) {characters[roster[l2]].abilities[i].name}", end = "\t")
+                    for i, ability in enumerate(characters[roster[l2]].abilities):
+                        print(f"({i}) {ability.name}", end = "\t")
                     l4 = validate("\nWhich ability?: ", len(characters[roster[l2]].abilities)-1)
                     clear()
-                    for i in range(len(characters[roster[l2]].abilities[l4].skills)):
-                        print(f"({i}) {characters[roster[l2]].abilities[l4].skills[i].name}", end = "\t")
+                    for i, skill in enumerate(characters[roster[l2]].abilities[l4].skills):
+                        print(f"({i}) {skill.name}", end = "\t")
                     l5 = validate("\nWhich skill?: ", len(characters[roster[l2]].abilities[l4].skills)-1)
                     characters[roster[l2]].abilities[l4].skills[l5].add_to_val(1)
                 elif l3 == 1:
                     clear()
-                    for i in range(len(characters[roster[l2]].weapons)):
-                        print(f"({i}) {characters[roster[l2]].weapons[i].name}",end = "\t")
+                    for i, weapon in enumerate(characters[roster[l2]].weapons):
+                        print(f"({i}) {weapon.name}",end = "\t")
                     l4 = validate("\nWhich Tool?: ", len(characters[roster[l2]].weapons)-1)
                     characters[roster[l2]].weapons[l4].add_to_val(1)
                 elif l3 == 2:
                     clear()
-                    for i in range(len(characters[roster[l2]].tools)):
-                        print(f"({i}) {characters[roster[l2]].tools[i].name}")
+                    for i, tool in enumerate(characters[roster[l2]].tools):
+                        print(f"({i}) {tool.name}")
                     l4 = validate("Which Tool?: ", len(characters[roster[l2]].tools)-1)
                     characters[roster[l2]].tools[l4].add_to_val(1)
                 elif l3 == 3:
@@ -173,8 +173,8 @@ def main_loop():
                 l2 = validate("(0) Add Character\t(1) Remove Character\t(2)Make Character\t(3)Adjust Stats\t(4) Delete Character\t(5) Back:", 4)
                 if l2 ==0:
                     clear()
-                    for i in range(len(characters)):
-                        print(f"({i}) {characters[i].name}({characters[i].player})")
+                    for i, character in enumerate(characters):
+                        print(f"({i}) {character.name}({character.player})")
                     print(f"({len(characters)}) Back")
                     l3 = validate("Which character?: ",len(characters))
                     if l3 == len(characters):
@@ -182,8 +182,8 @@ def main_loop():
                     roster.append(l3)
                 elif l2 == 1:
                     clear()
-                    for i in range(len(roster)):
-                        print(f"({i}) {characters[roster[i]].name}({characters[roster[i]].player})")
+                    for i, pos in enumerate(roster):
+                        print(f"({i}) {characters[pos].name}({characters[pos].player})")
                     print(f"({len(roster)}) Back")
                     l3 = validate("Which character?:", len(roster))
                     if l3 == len(roster):
@@ -198,8 +198,8 @@ def main_loop():
                     input("This character will appear at the end of the character list until the next reload.")
                 elif l2 == 3:
                     clear()
-                    for i in range(len(roster)):
-                        print(f"({i}) {characters[roster[i]].name}({characters[roster[i]].player})")
+                    for i, pos in enumerate(roster):
+                        print(f"({i}) {characters[pos].name}({characters[pos].player})")
                     print(f"({len(roster)}) Back")
                     l3 = validate("Which character?:",len(roster))
                     if l3 == len(roster):
@@ -209,12 +209,12 @@ def main_loop():
                         l4 = validate("What would you like to adjust?\n(0) Skill\t(1) Weapon\t(2) Tool\t(3) Back:",3)
                         if l4 == 0:
                             clear()
-                            for i in range(len(characters[roster[l3]].abilities)):
-                                print(f"({i}) {characters[roster[l3]].abilities[i].name}", end = "\t")
+                            for i, ability in enumerate(characters[roster[l3]].abilities):
+                                print(f"({i}) {ability.name}", end = "\t")
                             l5 = validate("\nWhich Ability?: ",len(characters[roster[l3]].abilities)-1)
                             clear()
-                            for i in range(len(characters[roster[l3]].abilities[l5].skills)):
-                                print(f"({i}) {characters[roster[l3]].abilities[l5].skills[i].name}",end="\t")
+                            for i, skill in enumerate(characters[roster[l3]].abilities[l5].skills):
+                                print(f"({i}) {skill.name}",end="\t")
                             l6 = validate("\nWhich skill?: ",len(characters[roster[l3]].abilities[l5].skills)-1)
                             while True:
                                 try:
@@ -225,8 +225,8 @@ def main_loop():
                                     print("Please enter and acceptable value.")
                         elif l4 == 1:
                             clear()
-                            for i in range(len(characters[roster[l3]].weapons)):
-                                print(f"({i}) {characters[roster[l3]].weapons[i].name}", end = "\t")
+                            for i, weapon in enumerate(characters[roster[l3]].weapons):
+                                print(f"({i}) {weapon.name}", end = "\t")
                             l5 = validate("\nWhich Weapon?: ", len(characters[roster[l3]].weapons)-1)
                             while True:
                                 clear()
@@ -237,8 +237,8 @@ def main_loop():
                                     print("Please enter an acceptable value")
                         elif l4 == 2:
                             clear()
-                            for i in range(len(characters[roster[l3]].tools)):
-                                print(f"({i}) {characters[roster[l3]].tools[i].name}")
+                            for i, tool in enumerate(characters[roster[l3]].tools):
+                                print(f"({i}) {tool.name}")
                             l5 = validate("\nWhich tool?: ", len(characters[roster[l3]].tools)-1)
                             while True:
                                 clear()
@@ -251,8 +251,8 @@ def main_loop():
                             break
                 elif l2 == 4:
                     clear()
-                    for i in range(len(characters)):
-                        print(f"({i}) {characters[i].name}")
+                    for i, character in enumerate(characters):
+                        print(f"({i}) {character.name}")
                     print(f"({len(characters)}) Back")
                     l3 = validate("Which Character?: ",len(characters))
                     if l3 == len(characters):
